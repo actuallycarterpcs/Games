@@ -1,0 +1,1590 @@
+<html><head><base href="/" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+<style>
+body { margin: 0; }
+canvas { display: block; }
+#instructions {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-family: Arial;
+    background: rgba(0,0,0,0.7);
+    padding: 10px;
+    border-radius: 5px;
+}
+#cooldown {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 20px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 10px;
+    overflow: hidden;
+}
+#cooldownBar {
+    width: 100%;
+    height: 100%;
+    background: #00ffff;
+    transition: width 0.1s linear;
+}
+#cooldownText {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-family: Arial;
+    line-height: 20px;
+}
+#redCooldown {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 20px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 10px;
+    overflow: hidden;
+}
+#redCooldownBar {
+    width: 100%;
+    height: 100%;
+    background: #ff0000;
+    transition: width 0.1s linear;
+}
+#redCooldownText {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-family: Arial;
+    line-height: 20px;
+}
+#awakeningCooldown {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 200px;
+    height: 20px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 10px;
+    overflow: hidden;
+}
+#awakeningBar {
+    width: 100%;
+    height: 100%;
+    background: #0066ff;
+    transition: width 0.1s linear;
+}
+#awakeningText {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-family: Arial;
+    line-height: 20px;
+}
+#hollowPurpleCooldown {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 20px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 10px;
+    overflow: hidden;
+}
+#hollowPurpleBar {
+    width: 100%;
+    height: 100%;
+    background: #800080;
+    transition: width 0.1s linear;
+}
+#hollowPurpleText {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-family: Arial;
+    line-height: 20px;
+}
+#dummyHealth {
+    position: fixed;
+    width: 100px;
+    height: 10px;
+}
+#dummyHealthBar {
+    width: 100%;
+    height: 100%;
+    background: #00ff00;
+    transition: width 0.1s linear;
+}
+#dummyHealthText {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-family: Arial;
+    line-height: 20px;
+}
+/* Add crosshair styles */
+#crosshair {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+}
+#crosshair::before,
+#crosshair::after {
+    content: '';
+    position: absolute;
+    background: white;
+}
+#crosshair::before {
+    left: 50%;
+    width: 2px;
+    height: 100%;
+    transform: translateX(-50%);
+}
+#crosshair::after {
+    top: 50%;
+    height: 2px;
+    width: 100%;
+    transform: translateY(-50%);
+}
+#dashCooldown {
+    position: fixed;
+    bottom: 110px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 20px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 10px;
+    overflow: hidden;
+}
+#dashBar {
+    width: 100%;
+    height: 100%;
+    background: #00ff00;
+    transition: width 0.1s linear;
+}
+#dashText {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-family: Arial;
+    line-height: 20px;
+}
+/* Add player list styles */
+#playerList {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+    font-family: Arial;
+}
+.player-entry {
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+}
+.player-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #0f0;
+    margin-right: 8px;
+}
+</style>
+</head>
+<body>
+<div id="instructions">
+    WASD - Move character<br>
+    Mouse - Look around<br>
+    Space - Jump<br>
+    Q - Dash<br>
+    1 - Shoot blue orb<br>
+    2 - Shoot red orb<br>
+    3 - Activate Blue Eyes mode<br>
+    4 - Hollow Purple (During Blue Eyes mode only)
+</div>
+<div id="cooldown">
+    <div id="cooldownBar"></div>
+    <div id="cooldownText">Blue Orb Ready</div>
+</div>
+<div id="redCooldown">
+    <div id="redCooldownBar"></div>
+    <div id="redCooldownText">Red Orb Ready</div>
+</div>
+<div id="awakeningCooldown">
+    <div id="awakeningBar"></div>
+    <div id="awakeningText">Awakening Ready</div>
+</div>
+<div id="hollowPurpleCooldown">
+    <div id="hollowPurpleBar"></div>
+    <div id="hollowPurpleText">Hollow Purple Ready</div>
+</div>
+<div id="dummyHealth">
+    <div id="dummyHealthBar"></div>
+    <div id="dummyHealthText">100/100</div>
+</div>
+<div id="dashCooldown">
+    <div id="dashBar"></div>
+    <div id="dashText">Dash Ready</div>
+</div>
+<!-- Add player list -->
+<div id="playerList"></div>
+<!-- Add crosshair element -->
+<div id="crosshair"></div>
+<script>
+const normalFOV = 75; // Match the initial FOV we set in camera
+const awakenedFOV = 100; // Higher FOV for awakened mode
+const camera = new THREE.PerspectiveCamera(normalFOV, window.innerWidth / window.innerHeight, 0.1, 1000);
+const scene = new THREE.Scene();
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Collection to store all collidable objects
+const collidableObjects = [];
+
+// Create character
+const characterGeometry = new THREE.BoxGeometry(1, 2, 1);
+const characterMaterial = new THREE.MeshBasicMaterial({
+    map: new THREE.TextureLoader().load('dgc4uwx-5d6a3b67-3723-4d6c-86c0-10cb1b9c5d7a.png')
+});
+const character = new THREE.Mesh(characterGeometry, characterMaterial);
+scene.add(character);
+
+// Create fists
+const fistGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.4);
+const fistMaterial = new THREE.MeshBasicMaterial({ color: 0xffccaa });
+const leftFist = new THREE.Mesh(fistGeometry, fistMaterial);
+const rightFist = new THREE.Mesh(fistGeometry, fistMaterial);
+
+// Update initial fist positions
+leftFist.position.set(-0.4, 0.5, -0.5);  // Changed z from 0.5 to -0.5
+rightFist.position.set(0.4, 0.5, -0.5);  // Changed z from 0.5 to -0.5
+
+// Update these variables
+const punchDuration = 100; // milliseconds
+const punchCooldown = 300; // Changed from undefined to 300ms (0.3s)
+let leftCooldown = false;
+let rightCooldown = false;
+
+// Add punch animation states
+let leftPunching = false;
+let rightPunching = false;
+const punchDamage = 5;
+const punchRange = 2;
+
+// Add variable to track which fist to punch next
+let nextPunchIsLeft = true;
+
+character.add(leftFist);
+character.add(rightFist);
+
+// Create character collision box
+const characterBox = new THREE.Box3();
+
+// Create road ground with texture
+const roadGeometry = new THREE.PlaneGeometry(100, 100);
+const roadMaterial = new THREE.MeshBasicMaterial({ 
+    color: 0x333333,
+    side: THREE.DoubleSide 
+});
+const road = new THREE.Mesh(roadGeometry, roadMaterial);
+road.rotation.x = Math.PI / 2;
+road.position.y = -1;
+scene.add(road);
+
+// Add road markings
+const lineGeometry = new THREE.PlaneGeometry(1, 15);
+const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
+for(let i = -40; i <= 40; i += 10) {
+    const line = new THREE.Mesh(lineGeometry, lineMaterial);
+    line.rotation.x = Math.PI / 2;
+    line.position.set(0, -0.99, i);
+    scene.add(line);
+}
+
+// Create dummy object and health tracking
+const dummyGeometry = new THREE.BoxGeometry(1, 2, 1);
+const dummyMaterial = new THREE.MeshBasicMaterial({color: 0x964B00});
+const dummy = new THREE.Mesh(dummyGeometry, dummyMaterial);
+dummy.position.set(0, 1, 0); // Center of map
+scene.add(dummy);
+
+// Dummy stats and state
+const dummyState = {
+    health: 100,
+    maxHealth: 100,
+    isDead: false
+};
+
+// Update awakening variables
+let isAwakenedMode = false;
+let awakeningMeter = 0; // Start at 0%
+let awakeningDuration = 20000; // Start at 20 seconds instead of 40
+let awakeningAvailable = true; // Added to control awakening availability
+const awakeningBar = document.getElementById('awakeningBar');
+const awakeningText = document.getElementById('awakeningText');
+
+// Update the updateAwakeningMeter function to properly show empty state at start
+function updateAwakeningMeter() {
+    awakeningBar.style.width = awakeningMeter + '%';
+    if(awakeningMeter >= 100) {
+        awakeningText.textContent = 'Press 3 for Blue Eyes Mode!';
+    } else {
+        awakeningText.textContent = 'Awakening: ' + Math.floor(awakeningMeter) + '%';
+    }
+}
+
+// Add initial meter update call after loading
+window.addEventListener('load', () => {
+    awakeningMeter = 0;
+    awakeningBar.style.width = '0%';
+    awakeningText.textContent = 'Awakening: 0%';
+});
+
+// Add NPC class and NPC management system
+const npcs = [];
+const npcNames = ['Gojo', 'Megumi', 'Yuji', 'Nobara']; // Example names
+const playerList = document.createElement('div');
+
+// Add NPC class
+class NPC {
+    constructor(name, x, z) {
+        // Create NPC mesh using same character model
+        this.mesh = new THREE.Mesh(
+            characterGeometry.clone(),
+            characterMaterial.clone()
+        );
+        this.mesh.position.set(x, 0, z);
+        
+        // Add fists like player
+        this.leftFist = new THREE.Mesh(fistGeometry.clone(), fistMaterial.clone());
+        this.rightFist = new THREE.Mesh(fistGeometry.clone(), fistMaterial.clone());
+        this.leftFist.position.set(-0.4, 0.5, -0.5);
+        this.rightFist.position.set(0.4, 0.5, -0.5);
+        this.mesh.add(this.leftFist);
+        this.mesh.add(this.rightFist);
+        
+        this.name = name;
+        this.targetPos = new THREE.Vector3();
+        this.moveSpeed = 0.08;
+        this.rotSpeed = 0.05;
+        this.state = 'wandering'; // wandering, attacking, etc
+        this.nextActionTime = 0;
+        this.attackCooldown = 0;
+        
+        scene.add(this.mesh);
+    }
+    
+    update() {
+        const now = Date.now();
+        
+        if (now > this.nextActionTime) {
+            // Pick new action
+            const rand = Math.random();
+            if (rand < 0.3) {
+                this.state = 'wandering';
+                this.targetPos.set(
+                    (Math.random() - 0.5) * 40,
+                    0,
+                    (Math.random() - 0.5) * 40
+                );
+            } else if (rand < 0.6 && !dummyState.isDead) {
+                this.state = 'attacking';
+            } else {
+                this.state = 'idle';
+            }
+            this.nextActionTime = now + 2000 + Math.random() * 3000;
+        }
+        
+        if (this.state === 'wandering') {
+            // Move toward target
+            const dir = this.targetPos.clone().sub(this.mesh.position).normalize();
+            const newPos = this.mesh.position.clone().add(dir.multiplyScalar(this.moveSpeed));
+            
+            if (!checkCollision(newPos)) {
+                this.mesh.position.copy(newPos);
+            }
+            
+            // Rotate toward movement direction
+            const targetAngle = Math.atan2(dir.x, dir.z);
+            const currentAngle = this.mesh.rotation.y;
+            const angleDiff = targetAngle - currentAngle;
+            this.mesh.rotation.y += Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), this.rotSpeed);
+        }
+        
+        if (this.state === 'attacking' && now > this.attackCooldown) {
+            // Face dummy
+            const dir = dummy.position.clone().sub(this.mesh.position).normalize();
+            this.mesh.rotation.y = Math.atan2(dir.x, dir.z);
+            
+            // Attack based on distance
+            const distToDummy = this.mesh.position.distanceTo(dummy.position);
+            
+            if (distToDummy < 2) {
+                // Punch
+                this.punch();
+                this.attackCooldown = now + 500;
+            } else if (distToDummy < 15) {
+                // Shoot orb
+                const rand = Math.random();
+                if (rand < 0.4) {
+                    this.shootBlueOrb();
+                } else if (rand < 0.8) {
+                    this.shootRedOrb();
+                }
+                this.attackCooldown = now + 2000;
+            }
+        }
+    }
+    
+    punch() {
+        const punchingFist = Math.random() < 0.5 ? this.leftFist : this.rightFist;
+        punchingFist.position.z = -1.5;
+        setTimeout(() => {
+            punchingFist.position.z = -0.5;
+        }, punchDuration);
+        
+        // Check damage
+        const fistWorldPos = new THREE.Vector3();
+        punchingFist.getWorldPosition(fistWorldPos);
+        const distance = fistWorldPos.distanceTo(dummy.position);
+        
+        if (distance < punchRange && !dummyState.isDead) {
+            dummyState.health -= punchDamage;
+            updateDummyHealth();
+            if (dummyState.health <= 0) {
+                killDummy();
+            }
+        }
+    }
+    
+    shootBlueOrb() {
+        const position = this.mesh.position.clone();
+        position.y += 0.5;
+        const direction = Math.atan2(
+            dummy.position.x - this.mesh.position.x,
+            dummy.position.z - this.mesh.position.z
+        );
+        createBlueOrb(position, direction);
+    }
+    
+    shootRedOrb() {
+        const position = this.mesh.position.clone();
+        position.y += 0.5;
+        const direction = Math.atan2(
+            dummy.position.x - this.mesh.position.x,
+            dummy.position.z - this.mesh.position.z
+        );
+        createRedOrb(position, direction);
+    }
+}
+
+// Add after scene setup
+// Setup player list
+playerList.id = 'playerList';
+document.body.appendChild(playerList);
+
+function updatePlayerList() {
+    playerList.innerHTML = '<h3>Players Online</h3>';
+    
+    // Add player (you)
+    const playerEntry = document.createElement('div');
+    playerEntry.className = 'player-entry';
+    playerEntry.innerHTML = `
+        <div class="player-status"></div>
+        <div>You (Player)</div>
+    `;
+    playerList.appendChild(playerEntry);
+    
+    // Add NPCs
+    npcs.forEach(npc => {
+        const npcEntry = document.createElement('div');
+        npcEntry.className = 'player-entry';
+        npcEntry.innerHTML = `
+            <div class="player-status"></div>
+            <div>${npc.name}</div>
+        `;
+        playerList.appendChild(npcEntry);
+    });
+}
+
+// Spawn NPCs
+for (let i = 0; i < npcNames.length; i++) {
+    const npc = new NPC(
+        npcNames[i],
+        (Math.random() - 0.5) * 40,
+        (Math.random() - 0.5) * 40
+    );
+    npcs.push(npc);
+}
+
+updatePlayerList();
+
+// Create detailed building function
+function createDetailedBuilding(x, z, width, height, depth) {
+    const buildingGroup = new THREE.Group();
+
+    // Main building
+    const buildingGeometry = new THREE.BoxGeometry(width, height, depth);
+    const buildingMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+    const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+    
+    // Windows
+    const windowMaterial = new THREE.MeshBasicMaterial({ color: 0x44B4D5 });
+    const windowSize = 0.8;
+    const windowSpacing = 2;
+    
+    for(let y = 1; y < height-1; y += windowSpacing) {
+        for(let x = -width/2 + 1; x < width/2; x += windowSpacing) {
+            for(let z = -depth/2 + 1; z < depth/2; z += windowSpacing) {
+                const windowGeometry = new THREE.BoxGeometry(windowSize, windowSize, 0.1);
+                const windowPane = new THREE.Mesh(windowGeometry, windowMaterial);
+                windowPane.position.set(x, y, depth/2);
+                const windowPane2 = windowPane.clone();
+                windowPane2.position.z = -depth/2;
+                buildingGroup.add(windowPane);
+                buildingGroup.add(windowPane2);
+            }
+        }
+    }
+
+    buildingGroup.add(building);
+    buildingGroup.position.set(x, height/2 - 1, z);
+    
+    // Add building collision box
+    const buildingBox = new THREE.Box3();
+    buildingBox.setFromObject(buildingGroup);
+    collidableObjects.push(buildingBox);
+    
+    scene.add(buildingGroup);
+}
+
+// Add detailed buildings
+const buildingPositions = [
+    {x: -20, z: -20, w: 8, h: 15, d: 8},
+    {x: -20, z: 20, w: 10, h: 20, d: 10},
+    {x: 20, z: -20, w: 12, h: 25, d: 12},
+    {x: 20, z: 20, w: 15, h: 30, d: 15},
+    {x: 0, z: -30, w: 10, h: 18, d: 10},
+    {x: 0, z: 30, w: 8, h: 22, d: 8},
+    {x: -30, z: 0, w: 12, h: 28, d: 12},
+    {x: 30, z: 0, w: 15, h: 35, d: 15},
+];
+
+buildingPositions.forEach(building => {
+    createDetailedBuilding(building.x, building.z, building.w, building.h, building.d);
+});
+
+// Create car function
+function createCar(x, z, color) {
+    const carGroup = new THREE.Group();
+    
+    // Car body
+    const bodyGeometry = new THREE.BoxGeometry(2, 1, 4);
+    const bodyMaterial = new THREE.MeshBasicMaterial({ color: color });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    
+    // Car roof
+    const roofGeometry = new THREE.BoxGeometry(1.8, 0.8, 2);
+    const roof = new THREE.Mesh(roofGeometry, bodyMaterial);
+    roof.position.y = 0.9;
+    
+    // Wheels
+    const wheelGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 32);
+    const wheelMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const wheelPositions = [
+        {x: -1, z: -1},
+        {x: 1, z: -1},
+        {x: -1, z: 1},
+        {x: 1, z: 1}
+    ];
+    
+    wheelPositions.forEach(pos => {
+        const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(pos.x, -0.4, pos.z);
+        carGroup.add(wheel);
+    });
+    
+    carGroup.add(body);
+    carGroup.add(roof);
+    carGroup.position.set(x, 0, z);
+    
+    // Add car collision box
+    const carBox = new THREE.Box3();
+    carBox.setFromObject(carGroup);
+    collidableObjects.push(carBox);
+    
+    scene.add(carGroup);
+    return carGroup;
+}
+
+// Add cars around the map
+const cars = [
+    createCar(-10, -10, 0xff0000),
+    createCar(10, 10, 0x00ff00),
+    createCar(-15, 15, 0x0000ff),
+    createCar(15, -15, 0xffff00)
+];
+
+camera.position.set(0, 3, 5);
+camera.lookAt(character.position);
+
+const moveSpeed = 0.1;
+const jumpForce = 0.15;
+let velocity = 0;
+let isJumping = false;
+const gravity = -0.01;
+let movement = {
+    forward: false,
+    backward: false,
+    left: false,
+    right: false
+};
+
+// Cooldown variables
+let blueOrbCooldown = false;
+let cooldownTime = 10000; // 10 seconds in milliseconds
+const cooldownBar = document.getElementById('cooldownBar');
+const cooldownText = document.getElementById('cooldownText');
+
+// Red orb cooldown variables
+let redOrbCooldown = false;
+let redCooldownTime = 10000; // 10 seconds in milliseconds
+const redCooldownBar = document.getElementById('redCooldownBar');
+const redCooldownText = document.getElementById('redCooldownText');
+
+// Hollow Purple cooldown variables
+let hollowPurpleCooldown = false;
+let hollowPurpleCooldownTime = 15000; // 15 seconds
+const hollowPurpleBar = document.getElementById('hollowPurpleBar');
+const hollowPurpleText = document.getElementById('hollowPurpleText');
+
+// Dash variables
+let isDashing = false;
+let dashCooldown = false;
+let dashCooldownTime = 2000; // 2 seconds
+const dashSpeed = 1.5; // How fast the dash moves
+const dashDuration = 200; // How long the dash lasts in milliseconds
+const dashBar = document.getElementById('dashBar');
+const dashText = document.getElementById('dashText');
+
+// Add aura particle system variables
+let auraParticles = [];
+const auraParticleCount = 50;
+const auraRadius = 1.2; // Distance from character
+const auraHeight = 2.0; // Height of aura effect
+
+// Particle creation function
+function createAuraParticle() {
+    const particleGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+    const particleMaterial = new THREE.MeshBasicMaterial({
+        color: 0x0066ff,
+        transparent: true,
+        opacity: 0.6
+    });
+    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+    
+    // Random position around character
+    const angle = Math.random() * Math.PI * 2;
+    const height = Math.random() * auraHeight;
+    particle.position.set(
+        Math.cos(angle) * auraRadius,
+        height - auraHeight/2,
+        Math.sin(angle) * auraRadius
+    );
+    
+    // Add properties for animation
+    particle.userData.angle = angle;
+    particle.userData.speed = 0.1 + Math.random() * 0.1;
+    particle.userData.lifetime = 0;
+    particle.userData.maxLife = 20 + Math.random() * 10;
+    
+    return particle;
+}
+
+// Collision detection function
+function checkCollision(newPosition) {
+    const characterBoxNew = new THREE.Box3();
+    const tempCharacter = character.clone();
+    tempCharacter.position.copy(newPosition);
+    characterBoxNew.setFromObject(tempCharacter);
+
+    for (const collidable of collidableObjects) {
+        if (characterBoxNew.intersectsBox(collidable)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Punch damage check
+function checkPunchDamage(fist) {
+    if (!dummyState.isDead) {
+        const fistWorldPos = new THREE.Vector3();
+        fist.getWorldPosition(fistWorldPos);
+        const distance = fistWorldPos.distanceTo(dummy.position);
+        
+        if (distance < punchRange) {
+            dummyState.health -= punchDamage;
+            // Increase awakening meter by 5%
+            awakeningMeter = Math.min(100, awakeningMeter + 5);
+            updateAwakeningMeter();
+            updateDummyHealth();
+            
+            if (dummyState.health <= 0) {
+                killDummy();
+            }
+        }
+    }
+}
+
+// Add projectiles array
+const projectiles = [];
+const explosions = [];
+
+// Modify the createBlueOrb function to shoot lower
+function createBlueOrb(position, direction) {
+    const orbGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+    const orbMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0x00ffff,
+        transparent: true,
+        opacity: 0.8
+    });
+    const orb = new THREE.Mesh(orbGeometry, orbMaterial);
+    orb.position.copy(position);
+    orb.direction = direction;
+    orb.velocity = new THREE.Vector3(
+        Math.sin(direction) * 0.5,
+        0.2, // Reduced upward velocity from 0.5 to 0.2
+        Math.cos(direction) * 0.5
+    );
+    orb.lifetime = 0;
+    orb.groundTimer = 0; // Add timer for ground delay
+    scene.add(orb);
+    projectiles.push(orb);
+}
+
+// Add red orb creation function
+function createRedOrb(position, direction) {
+    const orbGeometry = new THREE.SphereGeometry(0.4, 32, 32);
+    const orbMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xff0000,
+        transparent: true,
+        opacity: 0.8
+    });
+    const orb = new THREE.Mesh(orbGeometry, orbMaterial);
+    orb.position.copy(position);
+    orb.direction = direction;
+    orb.velocity = new THREE.Vector3(
+        Math.sin(direction) * 0.5,
+        0.2,
+        Math.cos(direction) * 0.5
+    );
+    orb.lifetime = 0;
+    orb.groundTimer = 0;
+    orb.isRed = true; // Mark as red orb
+    scene.add(orb);
+    projectiles.push(orb);
+}
+
+// New function for creating the Hollow Purple orb
+function createHollowPurpleOrb(position, direction) {
+    const orbGeometry = new THREE.SphereGeometry(0.8, 32, 32);
+    const orbMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0x800080,
+        transparent: true,
+        opacity: 0.9
+    });
+    const orb = new THREE.Mesh(orbGeometry, orbMaterial);
+    orb.position.copy(position);
+    orb.direction = direction;
+    // Increase velocity for more dramatic effect
+    orb.velocity = new THREE.Vector3(
+        Math.sin(direction) * 1.0, // Increased from 0.7
+        0.2,
+        Math.cos(direction) * 1.0  // Increased from 0.7
+    );
+    orb.lifetime = 0;
+    orb.groundTimer = 0;
+    orb.isHollowPurple = true;
+    scene.add(orb);
+    projectiles.push(orb);
+
+    // Add purple energy trail effect with adjusted positioning
+    const trailParticles = [];
+    const trailCount = 20;
+    for(let i = 0; i < trailCount; i++) {
+        const particleGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+        const particleMaterial = new THREE.MeshBasicMaterial({
+            color: 0x800080,
+            transparent: true,
+            opacity: 0.5
+        });
+        const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+        // Position particle slightly behind orb
+        particle.position.copy(orb.position);
+        particle.position.x -= Math.sin(direction) * 0.5;
+        particle.position.z -= Math.cos(direction) * 0.5;
+        particle.userData.offset = (Math.PI * 2 * i) / trailCount;
+        scene.add(particle);
+        trailParticles.push(particle);
+    }
+    orb.trailParticles = trailParticles;
+}
+
+// New function for creating the Hollow Purple explosion
+function createHollowPurpleExplosion(position) {
+    const explosionGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+    const explosionMaterial = new THREE.MeshBasicMaterial({
+        color: 0x800080,
+        transparent: true,
+        opacity: 0.9
+    });
+    const explosion = new THREE.Mesh(explosionGeometry, explosionMaterial);
+    explosion.position.copy(position);
+    explosion.scale.set(1, 1, 1);
+    explosion.lifetime = 0;
+    explosion.isHollowPurple = true;
+    scene.add(explosion);
+    explosions.push(explosion);
+    
+    // Check distance to dummy for damage
+    if(!dummyState.isDead) {
+        const distance = position.distanceTo(dummy.position);
+        if(distance < 5) { // Explosion radius
+            let damage = 0;
+            if(explosion.isHollowPurple) {
+                damage = 100; // This will one-shot the dummy (since max health is 100)
+            } else if(explosion.isRed) {
+                damage = 20; // Medium damage
+                // Increase meter by 5% for damage
+                awakeningMeter = Math.min(100, awakeningMeter + 5);
+                updateAwakeningMeter();
+            } else {
+                // Blue orb pulls dummy toward explosion
+                const pull = 2;
+                const direction = new THREE.Vector3()
+                    .subVectors(position, dummy.position)
+                    .normalize()
+                    .multiplyScalar(pull);
+                dummy.position.add(direction);
+            }
+
+            if(damage > 0) {
+                dummyState.health -= damage;
+                updateDummyHealth();
+
+                if(dummyState.health <= 0) {
+                    killDummy();
+                }
+            }
+        }
+    }
+}
+
+// Add gravity pull effect to explosion
+function createGravityPullEffect(position, isRed = false) {
+    const particles = [];
+    const particleCount = 50;
+    const particleGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+    const particleMaterial = new THREE.MeshBasicMaterial({
+        color: isRed ? 0xff0000 : 0x00ffff,
+        transparent: true,
+        opacity: 0.5
+    });
+
+    for(let i = 0; i < particleCount; i++) {
+        const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+        const angle = (Math.PI * 2 * i) / particleCount;
+        const radius = 5;
+        particle.position.set(
+            position.x + Math.cos(angle) * radius,
+            position.y,
+            position.z + Math.sin(angle) * radius
+        );
+        particle.userData.angle = angle;
+        particle.userData.radius = radius;
+        particle.userData.speed = 0.2;
+        scene.add(particle);
+        particles.push(particle);
+    }
+    return particles;
+}
+
+// Add to global variables
+const gravityEffects = [];
+
+// Modify createExplosion function to include damage calculation
+function createExplosion(position, isRed = false, isHollowPurple = false) {
+    const explosionGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+    const explosionMaterial = new THREE.MeshBasicMaterial({
+        color: isRed ? 0xff0000 : 0x00ffff,
+        transparent: true,
+        opacity: 0.8
+    });
+    const explosion = new THREE.Mesh(explosionGeometry, explosionMaterial);
+    explosion.position.copy(position);
+    explosion.scale.set(1, 1, 1);
+    explosion.lifetime = 0;
+    explosion.isRed = isRed;
+    scene.add(explosion);
+    explosions.push(explosion);
+    
+    // Check distance to dummy for damage
+    if(!dummyState.isDead) {
+        const distance = position.distanceTo(dummy.position);
+        if(distance < 5) { // Explosion radius
+            let damage = 0;
+            if(isHollowPurple) {
+                damage = 100; // This will one-shot the dummy (since max health is 100)
+            } else if(isRed) {
+                damage = 20; // Medium damage
+                // Increase meter by 5% for damage
+                awakeningMeter = Math.min(100, awakeningMeter + 5);
+                updateAwakeningMeter();
+            } else {
+                // Blue orb pulls dummy toward explosion
+                const pull = 2;
+                const direction = new THREE.Vector3()
+                    .subVectors(position, dummy.position)
+                    .normalize()
+                    .multiplyScalar(pull);
+                dummy.position.add(direction);
+            }
+
+            if(damage > 0) {
+                dummyState.health -= damage;
+                updateDummyHealth();
+                
+                if(dummyState.health <= 0) {
+                    killDummy();
+                }
+            }
+        }
+    }
+    
+    // Add gravity pull effect
+    const particles = createGravityPullEffect(position, isRed);
+    gravityEffects.push({
+        particles: particles,
+        center: position.clone(),
+        lifetime: 0
+    });
+}
+
+function updateDummyHealth() {
+    const percent = (dummyState.health / dummyState.maxHealth) * 100;
+    document.getElementById('dummyHealthBar').style.width = percent + '%';
+    document.getElementById('dummyHealthText').textContent = 
+        `${Math.ceil(dummyState.health)}/${dummyState.maxHealth}`;
+}
+
+function updateAwakeningMeter() {
+    awakeningBar.style.width = awakeningMeter + '%';
+    if(awakeningMeter >= 100) {
+        awakeningText.textContent = 'Press 3 for Blue Eyes Mode!';
+    } else {
+        awakeningText.textContent = 'Awakening: ' + Math.floor(awakeningMeter) + '%';
+    }
+}
+
+// Update killDummy function
+function killDummy() {
+    dummyState.isDead = true;
+    dummyState.health = 0;
+    updateDummyHealth();
+    scene.remove(dummy);
+
+    // Increase meter by 20% on kill
+    awakeningMeter = Math.min(100, awakeningMeter + 20);
+    updateAwakeningMeter();
+
+    // Respawn after delay
+    setTimeout(() => {
+        dummyState.isDead = false;
+        dummyState.health = dummyState.maxHealth;
+        updateDummyHealth();
+        dummy.position.set(0, 1, 0);
+        scene.add(dummy);
+    }, 3000);
+}
+
+// Initialize dummy health display
+updateDummyHealth();
+
+// Add to global variables
+let cameraPitch = 0;
+const maxPitch = Math.PI / 4; // 45 degrees up/down
+
+function getShootDirection() {
+    const direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+    return Math.atan2(direction.x, direction.z);
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    TWEEN.update();  // Add this line at the start of animate()
+
+    // Update NPCs
+    npcs.forEach(npc => npc.update());
+
+    // Animate fists
+    if (leftPunching) {
+        leftFist.position.z = -1.5;  // Changed from 1.5 to -1.5
+    } else {
+        leftFist.position.z = -0.5;  // Changed from 0.5 to -0.5
+    }
+    if (rightPunching) {
+        rightFist.position.z = -1.5;  // Changed from 1.5 to -1.5
+    } else {
+        rightFist.position.z = -0.5;  // Changed from 0.5 to -0.5
+    }
+
+    // Update projectiles
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        const orb = projectiles[i];
+        
+        // Check collision with dummy if it's alive
+        if (!dummyState.isDead) {
+            const dummyDistance = orb.position.distanceTo(dummy.position);
+            if (dummyDistance < 1.5) { // If hits dummy
+                if (orb.isHollowPurple) {
+                    createHollowPurpleExplosion(orb.position);
+                } else {
+                    createExplosion(orb.position, orb.isRed);
+                }
+                scene.remove(orb);
+                projectiles.splice(i, 1);
+                continue;
+            }
+        }
+
+        if (orb.position.y <= 0) {
+            orb.position.y = 0;
+            if (!orb.grounded) {
+                // Remove the delay for blue orbs
+                if (!orb.isRed && !orb.isHollowPurple) {
+                    createExplosion(orb.position, orb.isRed);
+                    scene.remove(orb);
+                    projectiles.splice(i, 1);
+                } else {
+                    orb.grounded = true;
+                    orb.groundTimer = 0;
+                }
+            }
+            if (orb.grounded) {
+                orb.groundTimer++;
+                // This now only applies to red orbs and hollow purple
+                if (orb.groundTimer >= 30) {
+                    if (orb.isHollowPurple) {
+                        createHollowPurpleExplosion(orb.position);
+                    } else {
+                        createExplosion(orb.position, orb.isRed);
+                    }
+                    scene.remove(orb);
+                    projectiles.splice(i, 1);
+                }
+            }
+        } else {
+            orb.velocity.y -= 0.02; // Gravity effect
+            orb.position.add(orb.velocity);
+        }
+        
+        // Remove if too old (while in air)
+        if (!orb.grounded && orb.lifetime > 100) {
+            scene.remove(orb);
+            projectiles.splice(i, 1);
+        }
+        orb.lifetime++;
+    }
+
+    // Update explosions with bigger scale
+    for (let i = explosions.length - 1; i >= 0; i--) {
+        const explosion = explosions[i];
+        explosion.lifetime++;
+        
+        // Handle Hollow Purple explosions
+        if (explosion.isHollowPurple) {
+            if (explosion.lifetime < 30) {
+                explosion.scale.addScalar(4.0); // Much bigger explosion
+                explosion.material.opacity -= 0.02;
+            } else {
+                scene.remove(explosion);
+                explosions.splice(i, 1);
+            }
+        } else {
+            // Existing explosion code...
+            if (explosion.lifetime < 20) {
+                explosion.scale.addScalar(explosion.isRed ? 2.5 : 1.5);
+                explosion.material.opacity -= 0.03;
+            } else {
+                scene.remove(explosion);
+                explosions.splice(i, 1);
+            }
+        }
+    }
+
+    // Update gravity effects
+    for(let i = gravityEffects.length - 1; i >= 0; i--) {
+        const effect = gravityEffects[i];
+        effect.lifetime++;
+        
+        effect.particles.forEach(particle => {
+            particle.userData.radius -= particle.userData.speed;
+            particle.position.x = effect.center.x + Math.cos(particle.userData.angle) * particle.userData.radius;
+            particle.position.z = effect.center.z + Math.sin(particle.userData.angle) * particle.userData.radius;
+            particle.material.opacity = (1 - effect.lifetime/20) * 0.5;
+        });
+        
+        if(effect.lifetime >= 20) {
+            effect.particles.forEach(particle => scene.remove(particle));
+            gravityEffects.splice(i, 1);
+        }
+    }
+
+    // Update aura particles
+    if(isAwakenedMode) {
+        // Update existing particles
+        for(let i = auraParticles.length - 1; i >= 0; i--) {
+            const particle = auraParticles[i];
+            particle.userData.lifetime++;
+            
+            // Move particle upward and around
+            particle.userData.angle += particle.userData.speed;
+            particle.position.x = character.position.x + Math.cos(particle.userData.angle) * auraRadius;
+            particle.position.z = character.position.z + Math.sin(particle.userData.angle) * auraRadius;
+            particle.position.y += 0.05;
+            
+            // Fade out particle
+            particle.material.opacity = 0.6 * (1 - particle.userData.lifetime / particle.userData.maxLife);
+            
+            // Remove old particles
+            if(particle.userData.lifetime >= particle.userData.maxLife) {
+                scene.remove(particle);
+                auraParticles.splice(i, 1);
+            }
+        }
+        
+        // Add new particles to maintain count
+        while(auraParticles.length < auraParticleCount) {
+            const particle = createAuraParticle();
+            // Position relative to character
+            particle.position.add(character.position);
+            scene.add(particle);
+            auraParticles.push(particle);
+        }
+    } else if(auraParticles.length > 0) {
+        // Clear particles when not in awakened mode
+        auraParticles.forEach(p => scene.remove(p));
+        auraParticles = [];
+    }
+
+    let newPosition = character.position.clone();
+
+    if(movement.forward) {
+        newPosition.x += Math.sin(character.rotation.y) * moveSpeed;
+        newPosition.z += Math.cos(character.rotation.y) * moveSpeed;
+    }
+    if(movement.backward) {
+        newPosition.x -= Math.sin(character.rotation.y) * moveSpeed;
+        newPosition.z -= Math.cos(character.rotation.y) * moveSpeed;
+    }
+    if(movement.left) {
+        newPosition.x += Math.cos(character.rotation.y) * moveSpeed;
+        newPosition.z -= Math.sin(character.rotation.y) * moveSpeed;
+    }
+    if(movement.right) {
+        newPosition.x -= Math.cos(character.rotation.y) * moveSpeed;
+        newPosition.z += Math.sin(character.rotation.y) * moveSpeed;
+    }
+
+    // Implement dash functionality
+    if (isDashing) {
+        // If dashing, do not update position with normal movement
+    } else {
+        // Only update position if there's no collision
+        if (!checkCollision(newPosition)) {
+            character.position.copy(newPosition);
+        }
+    }
+
+    character.position.y += velocity;
+    if(isJumping) {
+        velocity += gravity;
+        if(character.position.y <= 0) {
+            character.position.y = 0;
+            velocity = 0;
+            isJumping = false;
+        }
+    }
+
+    camera.position.x = character.position.x + 5 * Math.sin(character.rotation.y + Math.PI);
+    camera.position.z = character.position.z + 5 * Math.cos(character.rotation.y + Math.PI);
+    camera.position.y = character.position.y + 3; // Keep camera height constant
+
+    // Calculate look target with pitch
+    const lookTarget = new THREE.Vector3(
+        character.position.x + Math.sin(character.rotation.y),
+        character.position.y + cameraPitch * 2, // Multiply by 2 to make the tilt more pronounced
+        character.position.z + Math.cos(character.rotation.y)
+    );
+    camera.lookAt(lookTarget);
+
+    // Update dummy health bar position
+    if (!dummyState.isDead) {
+        const screenPosition = dummy.position.clone().project(camera);
+        const x = (screenPosition.x + 1) * window.innerWidth / 2;
+        const y = (-screenPosition.y + 1) * window.innerHeight / 2;
+        
+        document.getElementById('dummyHealth').style.left = (x - 50) + 'px';
+        document.getElementById('dummyHealth').style.top = (y - 50) + 'px';
+    }
+
+    // Update character collision box
+    characterBox.setFromObject(character);
+
+    renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+renderer.domElement.addEventListener('click', () => {
+    renderer.domElement.requestPointerLock();
+});
+
+document.addEventListener('keydown', (e) => {
+    switch(e.key.toLowerCase()) {
+        case 'w': movement.forward = true; break;
+        case 's': movement.backward = true; break;
+        case 'a': movement.left = true; break;
+        case 'd': movement.right = true; break;
+        case ' ': if(!isJumping) {
+            velocity = jumpForce;
+            isJumping = true;
+        } break;
+        case 'q': 
+            if (!dashCooldown && !isDashing) {
+                // Start dash
+                isDashing = true;
+                
+                // Get current movement direction or use facing direction if not moving
+                let dashDirection = new THREE.Vector3();
+                if (movement.forward || movement.backward || movement.left || movement.right) {
+                    dashDirection.set(0, 0, 0);
+                    if (movement.forward) {
+                        dashDirection.x += Math.sin(character.rotation.y);
+                        dashDirection.z += Math.cos(character.rotation.y);
+                    }
+                    if (movement.backward) {
+                        dashDirection.x -= Math.sin(character.rotation.y);
+                        dashDirection.z -= Math.cos(character.rotation.y);
+                    }
+                    if (movement.left) {
+                        dashDirection.x += Math.cos(character.rotation.y);
+                        dashDirection.z -= Math.sin(character.rotation.y);
+                    }
+                    if (movement.right) {
+                        dashDirection.x -= Math.cos(character.rotation.y);
+                        dashDirection.z += Math.sin(character.rotation.y);
+                    }
+                    dashDirection.normalize();
+                } else {
+                    // Use facing direction if not moving
+                    dashDirection.set(Math.sin(character.rotation.y), 0, Math.cos(character.rotation.y));
+                }
+                
+                // Apply dash movement
+                const dashInterval = setInterval(() => {
+                    const newPosition = character.position.clone();
+                    newPosition.x += dashDirection.x * dashSpeed;
+                    newPosition.z += dashDirection.z * dashSpeed;
+                    
+                    if (!checkCollision(newPosition)) {
+                        character.position.copy(newPosition);
+                    }
+                }, 16); // ~60fps
+                
+                // End dash after duration
+                setTimeout(() => {
+                    clearInterval(dashInterval);
+                    isDashing = false;
+                }, dashDuration);
+                
+                // Start cooldown
+                dashCooldown = true;
+                dashBar.style.width = '0%';
+                dashText.textContent = 'Cooling Down...';
+                
+                // Update cooldown bar
+                const startTime = Date.now();
+                const updateDashCooldown = () => {
+                    if (dashCooldown) {
+                        const elapsed = Date.now() - startTime;
+                        const remaining = dashCooldownTime - elapsed;
+                        if (remaining > 0) {
+                            const percent = (remaining / dashCooldownTime) * 100;
+                            dashBar.style.width = (100 - percent) + '%';
+                            requestAnimationFrame(updateDashCooldown);
+                        }
+                    }
+                };
+                updateDashCooldown();
+                
+                // Reset cooldown after time
+                setTimeout(() => {
+                    dashCooldown = false;
+                    dashBar.style.width = '100%';
+                    dashText.textContent = 'Dash Ready';
+                }, dashCooldownTime);
+            }
+            break;
+        case '1': 
+            if (document.pointerLockElement === renderer.domElement && !blueOrbCooldown) {
+                const position = character.position.clone();
+                position.y += 0.5;
+                const direction = getShootDirection();
+                createBlueOrb(position, direction);
+                
+                // Start cooldown
+                blueOrbCooldown = true;
+                cooldownBar.style.width = '0%';
+                cooldownText.textContent = 'Cooling Down...';
+                
+                setTimeout(() => {
+                    blueOrbCooldown = false;
+                    cooldownBar.style.width = '100%';
+                    cooldownText.textContent = 'Blue Orb Ready';
+                }, cooldownTime);
+                
+                // Update cooldown bar
+                const startTime = Date.now();
+                const updateCooldown = () => {
+                    if (blueOrbCooldown) {
+                        const elapsed = Date.now() - startTime;
+                        const remaining = cooldownTime - elapsed;
+                        if (remaining > 0) {
+                            const percent = (remaining / cooldownTime) * 100;
+                            cooldownBar.style.width = (100 - percent) + '%';
+                            requestAnimationFrame(updateCooldown);
+                        }
+                    }
+                };
+                updateCooldown();
+            }
+            break;
+        case '2': 
+            if (document.pointerLockElement === renderer.domElement && !redOrbCooldown) {
+                const position = character.position.clone();
+                position.y += 0.5;
+                const direction = getShootDirection();
+                createRedOrb(position, direction);
+                
+                redOrbCooldown = true;
+                redCooldownBar.style.width = '0%';
+                redCooldownText.textContent = 'Cooling Down...';
+                
+                setTimeout(() => {
+                    redOrbCooldown = false;
+                    redCooldownBar.style.width = '100%';
+                    redCooldownText.textContent = 'Red Orb Ready';
+                }, redCooldownTime);
+                
+                const startTime = Date.now();
+                const updateCooldown = () => {
+                    if (redOrbCooldown) {
+                        const elapsed = Date.now() - startTime;
+                        const remaining = redCooldownTime - elapsed;
+                        if (remaining > 0) {
+                            const percent = (remaining / redCooldownTime) * 100;
+                            redCooldownBar.style.width = (100 - percent) + '%';
+                            requestAnimationFrame(updateCooldown);
+                        }
+                    }
+                };
+                updateCooldown();
+            }
+            break;
+        case '3':
+            if (!isAwakenedMode && awakeningMeter >= 100 && awakeningAvailable) {
+                isAwakenedMode = true;
+                awakeningMeter = 0; // Reset meter
+                awakeningAvailable = false; // Prevent reactivation
+                updateAwakeningMeter();
+                awakeningText.textContent = 'Awakening Active';
+
+                // Clear any existing aura particles
+                auraParticles.forEach(p => scene.remove(p));
+                auraParticles = [];
+
+                // Create initial aura particles
+                for(let i = 0; i < auraParticleCount; i++) {
+                    const particle = createAuraParticle();
+                    scene.add(particle);
+                    auraParticles.push(particle);
+                }
+
+                // Start FOV animation
+                new TWEEN.Tween(camera)
+                    .to({ fov: awakenedFOV }, 500)
+                    .easing(TWEEN.Easing.Cubic.Out)
+                    .onUpdate(() => camera.updateProjectionMatrix())
+                    .start();
+
+                // Start duration countdown
+                const startTime = Date.now();
+                const updateAwakening = () => {
+                    const elapsed = Date.now() - startTime;
+                    const remaining = awakeningDuration - elapsed;
+                    
+                    if (remaining > 0) {
+                        const percent = (remaining / awakeningDuration) * 100;
+                        awakeningBar.style.width = percent + '%';
+                        requestAnimationFrame(updateAwakening);
+                    } else {
+                        // Deactivate awakening
+                        isAwakenedMode = false;
+                        awakeningBar.style.width = '0%';
+                        awakeningText.textContent = 'Awakening: 0%';
+                        awakeningAvailable = true; // Allow reactivation only after finishing
+                        
+                        // Return FOV to normal
+                        new TWEEN.Tween(camera)
+                            .to({ fov: normalFOV }, 500)
+                            .easing(TWEEN.Easing.Cubic.Out)
+                            .onUpdate(() => camera.updateProjectionMatrix())
+                            .start();
+                    }
+                };
+                updateAwakening();
+            }
+            break;
+        case '4':
+            if (isAwakenedMode && !hollowPurpleCooldown && document.pointerLockElement === renderer.domElement) {
+                const position = character.position.clone();
+                position.y += 0.5;
+                const direction = getShootDirection();
+                createHollowPurpleOrb(position, direction);
+                
+                // Start cooldown
+                hollowPurpleCooldown = true;
+                hollowPurpleBar.style.width = '0%';
+                hollowPurpleText.textContent = 'Cooling Down...';
+                
+                setTimeout(() => {
+                    hollowPurpleCooldown = false;
+                    hollowPurpleBar.style.width = '100%';
+                    hollowPurpleText.textContent = 'Hollow Purple Ready';
+                }, hollowPurpleCooldownTime);
+                
+                // Update cooldown bar
+                const startTime = Date.now();
+                const updateCooldown = () => {
+                    if (hollowPurpleCooldown) {
+                        const elapsed = Date.now() - startTime;
+                        const remaining = hollowPurpleCooldownTime - elapsed;
+                        if (remaining > 0) {
+                            const percent = (remaining / hollowPurpleCooldownTime) * 100;
+                            hollowPurpleBar.style.width = (100 - percent) + '%';
+                            requestAnimationFrame(updateCooldown);
+                        }
+                    }
+                };
+                updateCooldown();
+            }
+            break;
+    }
+});
+
+// Add mousedown event listener
+renderer.domElement.addEventListener('mousedown', (e) => {
+    if (document.pointerLockElement === renderer.domElement) {
+        if (e.button === 0) { // Left click
+            if (nextPunchIsLeft && !leftCooldown) {
+                leftPunching = true;
+                leftCooldown = true;
+                checkPunchDamage(leftFist);
+                
+                setTimeout(() => {
+                    leftPunching = false;
+                }, punchDuration);
+                
+                setTimeout(() => {
+                    leftCooldown = false;
+                }, punchCooldown);
+                
+                nextPunchIsLeft = false;
+            } else if (!nextPunchIsLeft && !rightCooldown) {
+                rightPunching = true;
+                rightCooldown = true;
+                checkPunchDamage(rightFist);
+                
+                setTimeout(() => {
+                    rightPunching = false;
+                }, punchDuration);
+                
+                setTimeout(() => {
+                    rightCooldown = false;
+                }, punchCooldown);
+                
+                nextPunchIsLeft = true;
+            }
+        }
+    }
+});
+
+// Remove the right-click punch handling since we're using alternating left-clicks
+
+// Add to prevent right-click menu
+renderer.domElement.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+});
+
+document.addEventListener('keyup', (e) => {
+    switch(e.key.toLowerCase()) {
+        case 'w': movement.forward = false; break;
+        case 's': movement.backward = false; break;
+        case 'a': movement.left = false; break;
+        case 'd': movement.right = false; break;
+    }
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (document.pointerLockElement === renderer.domElement) {
+        const deltaX = e.movementX;
+        const deltaY = e.movementY;
+        
+        character.rotation.y -= deltaX * 0.01;
+        
+        // Update camera pitch with limits
+        cameraPitch = Math.max(-maxPitch, Math.min(maxPitch, cameraPitch - deltaY * 0.01));
+    }
+});
+
+animate();
+</script>
+</body></html>
